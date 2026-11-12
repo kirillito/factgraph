@@ -16,3 +16,15 @@ These are deliberate, so each check has something to find:
 | Check | Where | Bug |
 |---|---|---|
 | A1 | `data/interactables.json` | `empty_mooring` reads `clue.lighthouse.leter`, a typo of `clue.lighthouse.letter` |
+| A1 | `game/dialogue/harbour_master.dialogue` | the "Ask about the boat" choice reads `clue.boat.missng`, a typo of `clue.boat.missing` |
+
+## Dialogue
+
+`game/` is a minimal Godot project holding the sample's Dialogue Manager files. `build/dialogue.json` is
+the exporter's output for them, kept in the repository so the sample runs without Godot. To regenerate it,
+install Dialogue Manager 4.x and the factgraph addon into `game/addons/`, then from `game/`:
+
+```
+godot --headless --import
+godot --headless --script res://addons/factgraph/export_dialogue.gd -- --out ../build/dialogue.json
+```

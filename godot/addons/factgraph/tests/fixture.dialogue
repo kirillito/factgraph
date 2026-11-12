@@ -1,0 +1,8 @@
+~ start
+Keeper: Hello. [do set_fact("greeted")]
+if has("clue.letter"):
+	Keeper: The letter.
+- Ask [if has("clue.boat") /]
+	do give_item("oar")
+- Leave
+=> END

@@ -1,0 +1,9 @@
+~ harbour_master
+Harbour Master: The keeper hasn't lit the lamp in two nights.
+if has("clue.lighthouse.letter"):
+	Harbour Master: A letter? He wrote to his sister every week.
+- Ask about the boat [if has("clue.boat.missng") /]
+	Harbour Master: His boat was gone from the mooring at dawn.
+	do set_fact("clue.harbour.testimony")
+- Leave
+=> END

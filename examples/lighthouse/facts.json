@@ -4,6 +4,7 @@
     "clue.lighthouse.letter":  {"type": "bool"},
     "clue.boat.missing":       {"type": "bool"},
     "clue.lamp.cold":          {"type": "bool"},
+    "clue.harbour.testimony":  {"type": "bool"},
     "case.keeper.state":       {"type": "string", "values": ["open", "solved"], "initial": "open"},
     "clues.found":             {"type": "int"}
   },

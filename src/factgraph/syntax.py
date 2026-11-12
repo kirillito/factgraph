@@ -96,11 +96,11 @@ def parse_effect(node, file: str, line: int, effect_map: dict) -> list[Effect]:
             return [Effect("inc", str(node["inc"]), _plain(node.get("by", 1)), here)]
         for name, template in effect_map.items():
             if name in node:
-                return [_from_template(template, node[name], here)]
+                return [effect_from_template(template, node[name], here)]
     raise SyntaxProblem(f"unrecognized effect {_show(node)}", here)
 
 
-def _from_template(template: dict, arg, here: Source) -> Effect:
+def effect_from_template(template: dict, arg, here: Source) -> Effect:
     """Effect-map entries look like {set = "item.{}", value = true} or {inc = "x.{}", by = 1}."""
     if "set" in template:
         return Effect("set", template["set"].replace("{}", str(arg)), template.get("value", True), here)

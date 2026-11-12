@@ -3,7 +3,7 @@
     "id": "keeper_left_by_boat",
     "chapter": "1",
     "case": "keeper",
-    "clues": ["clue.boat.missing", "clue.lamp.cold"],
+    "clues": ["clue.boat.missing", "clue.lamp.cold", "clue.harbour.testimony"],
     "requires": {"fact": "case.keeper.state", "eq": "open"},
     "on_solve": [{"set": "case.keeper.state", "value": "solved"}]
   }

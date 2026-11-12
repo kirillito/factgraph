@@ -1,0 +1,6 @@
+; Minimal Godot project for the sample. Install Dialogue Manager 4.x and the factgraph addon
+; (godot/addons/factgraph from the factgraph repository) into addons/ to re-export the dialogue.
+config_version=5
+
+[application]
+config/name="Lighthouse Keeper (factgraph sample)"

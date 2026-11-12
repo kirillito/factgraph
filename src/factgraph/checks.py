@@ -14,7 +14,18 @@ def check(project: Project) -> list[Finding]:
     findings += undefined_facts(project, symbols)
     findings += write_only_facts(project, symbols)
     findings += type_misuse(project, symbols)
-    return findings
+    return _dedupe(findings)
+
+
+def _dedupe(findings: list[Finding]) -> list[Finding]:
+    """One finding per (check, message, place): a condition shared by many beats is reported once."""
+    seen, unique = set(), []
+    for f in findings:
+        key = (f.check, f.message, f.source)
+        if key not in seen:
+            seen.add(key)
+            unique.append(f)
+    return unique
 
 
 def type_of(value) -> str:

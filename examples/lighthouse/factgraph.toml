@@ -17,6 +17,19 @@ write_only_allow = ["stats.*"]
 # Custom effect names used by the data files, normalized to fact writes.
 give_item = { set = "item.{}" }
 
+# Dialogue Manager: which functions read and write facts.
+[vocabulary.read]
+has = "fact"
+
+[vocabulary.write]
+set_fact = "set"
+
+[[sources.dialogue_manager]]
+# Written by the Godot exporter (godot/addons/factgraph); regenerate after editing game/dialogue.
+export = "build/dialogue.json"
+res_root = "game"
+static_tags = { chapter = "1" }
+
 [[sources.json]]
 files = "data/locations.json"
 kind = "location"
