@@ -1,0 +1,38 @@
+# Sample project: "The Missing Lighthouse Keeper", a tiny invented mystery.
+# It contains deliberately seeded bugs so every factgraph check has something to find.
+# See README.md in this folder for the list.
+
+[project]
+facts_file = "facts.json"
+
+[goals."chapter.1.complete"]
+requires = { fact = "case.keeper.state", eq = "solved" }
+tags = { chapter = "1" }
+
+[check]
+# Facts only analytics or achievements read; not a bug when nothing in content reads them.
+write_only_allow = ["stats.*"]
+
+[effects]
+# Custom effect names used by the data files, normalized to fact writes.
+give_item = { set = "item.{}" }
+
+[[sources.json]]
+files = "data/locations.json"
+kind = "location"
+id_prefix = "enter."
+tags = { chapter = "chapter", location = "id" }
+
+[[sources.json]]
+files = "data/interactables.json"
+kind = "interactable"
+items = "interactables"
+tags = { chapter = "chapter", location = "location" }
+
+[[sources.json]]
+files = "data/deductions.json"
+kind = "deduction"
+id_prefix = "deduction."
+requires = ["clues", "requires"]
+effects = "on_solve"
+tags = { chapter = "chapter", case = "case" }

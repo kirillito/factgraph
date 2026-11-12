@@ -1,0 +1,5 @@
+[
+  {"id": "harbour", "chapter": "1", "requires": "chapter.1.started"},
+  {"id": "lighthouse", "chapter": "1", "requires": "chapter.1.started"},
+  {"id": "boathouse", "chapter": "1", "requires": "clue.lighthouse.letter"}
+]

@@ -1,0 +1,13 @@
+{
+  "facts": {
+    "chapter.1.started":       {"type": "bool", "initial": true},
+    "clue.lighthouse.letter":  {"type": "bool"},
+    "clue.boat.missing":       {"type": "bool"},
+    "clue.lamp.cold":          {"type": "bool"},
+    "case.keeper.state":       {"type": "string", "values": ["open", "solved"], "initial": "open"},
+    "clues.found":             {"type": "int"}
+  },
+  "aliases": {
+    "clue.keeper.letter": "clue.lighthouse.letter"
+  }
+}

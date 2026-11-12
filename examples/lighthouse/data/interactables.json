@@ -1,0 +1,37 @@
+{
+  "interactables": [
+    {
+      "id": "keeper_desk",
+      "chapter": "1",
+      "location": "lighthouse",
+      "effects": [{"set": "clue.lighthouse.letter"}, {"inc": "clues.found"}, {"set": "stats.desk_opened"}]
+    },
+    {
+      "id": "lamp_room",
+      "chapter": "1",
+      "location": "lighthouse",
+      "effects": [{"set": "clue.lamp.cold"}, {"inc": "clues.found"}]
+    },
+    {
+      "id": "empty_mooring",
+      "chapter": "1",
+      "location": "boathouse",
+      "requires": {"fact": "clue.lighthouse.leter"},
+      "effects": [{"set": "clue.boat.missing"}, {"inc": "clues.found"}]
+    },
+    {
+      "id": "harbour_master",
+      "chapter": "1",
+      "location": "harbour",
+      "requires": {"fact": "clues.found", "gt": 1},
+      "effects": [{"give_item": "rope"}]
+    },
+    {
+      "id": "cliff_ladder",
+      "chapter": "1",
+      "location": "harbour",
+      "requires": "item.rope",
+      "effects": [{"set": "stats.cliff_climbed"}]
+    }
+  ]
+}
