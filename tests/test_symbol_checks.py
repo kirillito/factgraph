@@ -45,7 +45,7 @@ def test_condition_type_and_value_misuse():
         ],
     )
 
-    assert summary(check(project)) == [
+    assert [f for f in summary(check(project)) if f[0] == "A3"] == [
         ("A3", "'case.keeper.state' compared with 'gt' but is string"),
         ("A3", "'case.keeper.state' compared with value 'closed' outside its declared values"),
         ("A3", "'case.keeper.state' compared with value 'won' outside its declared values"),

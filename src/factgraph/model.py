@@ -129,6 +129,8 @@ class Project:
     beats: list[Beat] = field(default_factory=list)
     goals: list[Goal] = field(default_factory=list)
     write_only_allow: list[str] = field(default_factory=list)
+    # Beat kinds checked for self-gating (A5): deductions and puzzles that need their own outcome.
+    self_gated_kinds: list[str] = field(default_factory=lambda: ["deduction", "puzzle"])
     # Problems found while loading (unmapped syntax, bad config), reported with the rest.
     load_findings: list[Finding] = field(default_factory=list)
 

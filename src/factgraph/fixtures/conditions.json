@@ -1,0 +1,65 @@
+{
+  "about": "Condition semantics fixtures. Run each case through your game's own condition evaluator: given 'state' (facts not listed are unset), 'condition' must evaluate to 'expected'. factgraph's evaluator passes all of them.",
+  "semantics": [
+    "An unset fact is falsy and equal to nothing.",
+    "A bare fact test is true when the value is truthy: true, a non-zero int or a non-empty string.",
+    "eq and in compare type and value: true does not equal 1 and 1 does not equal \"1\".",
+    "gt and lt are false for anything that is not an int.",
+    "all of nothing is true; any of nothing is false."
+  ],
+  "cases": [
+    {"name": "bare fact, true",           "condition": {"fact": "door.open"}, "state": {"door.open": true},  "expected": true},
+    {"name": "bare fact, false",          "condition": {"fact": "door.open"}, "state": {"door.open": false}, "expected": false},
+    {"name": "bare fact, unset",          "condition": {"fact": "door.open"}, "state": {},                   "expected": false},
+    {"name": "string shorthand",          "condition": "door.open",           "state": {"door.open": true},  "expected": true},
+    {"name": "bare int, zero",            "condition": {"fact": "clues"},     "state": {"clues": 0},         "expected": false},
+    {"name": "bare int, non-zero",        "condition": {"fact": "clues"},     "state": {"clues": 2},         "expected": true},
+    {"name": "bare string, empty",        "condition": {"fact": "mood"},      "state": {"mood": ""},         "expected": false},
+    {"name": "bare string, non-empty",    "condition": {"fact": "mood"},      "state": {"mood": "calm"},     "expected": true},
+
+    {"name": "eq string, match",          "condition": {"fact": "case", "eq": "solved"}, "state": {"case": "solved"}, "expected": true},
+    {"name": "eq string, no match",       "condition": {"fact": "case", "eq": "solved"}, "state": {"case": "open"},   "expected": false},
+    {"name": "eq on unset",               "condition": {"fact": "case", "eq": "open"},   "state": {},                 "expected": false},
+    {"name": "eq int",                    "condition": {"fact": "clues", "eq": 3},       "state": {"clues": 3},       "expected": true},
+    {"name": "eq bool false",             "condition": {"fact": "door.open", "eq": false}, "state": {"door.open": false}, "expected": true},
+    {"name": "eq bool false on unset",    "condition": {"fact": "door.open", "eq": false}, "state": {},                 "expected": false},
+    {"name": "eq: true is not 1",         "condition": {"fact": "clues", "eq": 1},       "state": {"clues": true},    "expected": false},
+    {"name": "eq: 1 is not \"1\"",        "condition": {"fact": "clues", "eq": "1"},     "state": {"clues": 1},       "expected": false},
+
+    {"name": "gt, above",                 "condition": {"fact": "clues", "gt": 2}, "state": {"clues": 3},    "expected": true},
+    {"name": "gt, equal",                 "condition": {"fact": "clues", "gt": 2}, "state": {"clues": 2},    "expected": false},
+    {"name": "lt, below",                 "condition": {"fact": "clues", "lt": 2}, "state": {"clues": 1},    "expected": true},
+    {"name": "lt, equal",                 "condition": {"fact": "clues", "lt": 2}, "state": {"clues": 2},    "expected": false},
+    {"name": "gt on unset",               "condition": {"fact": "clues", "gt": -1}, "state": {},             "expected": false},
+    {"name": "lt on unset",               "condition": {"fact": "clues", "lt": 5}, "state": {},              "expected": false},
+    {"name": "gt on a string",            "condition": {"fact": "clues", "gt": 0}, "state": {"clues": "3"},  "expected": false},
+    {"name": "gt on a bool",              "condition": {"fact": "clues", "gt": 0}, "state": {"clues": true}, "expected": false},
+
+    {"name": "in, member",                "condition": {"fact": "case", "in": ["open", "stalled"]}, "state": {"case": "open"},   "expected": true},
+    {"name": "in, not a member",          "condition": {"fact": "case", "in": ["open", "stalled"]}, "state": {"case": "solved"}, "expected": false},
+    {"name": "in, unset",                 "condition": {"fact": "case", "in": ["open"]},           "state": {},                 "expected": false},
+    {"name": "in, empty list",            "condition": {"fact": "case", "in": []},                 "state": {"case": "open"},   "expected": false},
+
+    {"name": "not",                       "condition": {"not": {"fact": "door.open"}}, "state": {"door.open": true}, "expected": false},
+    {"name": "not on unset",              "condition": {"not": {"fact": "door.open"}}, "state": {},                  "expected": true},
+    {"name": "not eq on unset",           "condition": {"not": {"fact": "case", "eq": "solved"}}, "state": {},      "expected": true},
+
+    {"name": "all, every item true",      "condition": {"all": ["a", "b"]}, "state": {"a": true, "b": true},  "expected": true},
+    {"name": "all, one item false",       "condition": {"all": ["a", "b"]}, "state": {"a": true, "b": false}, "expected": false},
+    {"name": "all of nothing",            "condition": {"all": []},         "state": {},                      "expected": true},
+    {"name": "list shorthand is all",     "condition": ["a", "b"],          "state": {"a": true},             "expected": false},
+    {"name": "any, one item true",        "condition": {"any": ["a", "b"]}, "state": {"b": true},             "expected": true},
+    {"name": "any, no item true",         "condition": {"any": ["a", "b"]}, "state": {"a": false},            "expected": false},
+    {"name": "any of nothing",            "condition": {"any": []},         "state": {},                      "expected": false},
+
+    {"name": "nested",
+     "condition": {"all": [{"fact": "clue.letter"}, {"not": {"fact": "case", "eq": "solved"}},
+                           {"any": [{"fact": "clues", "gt": 2}, {"fact": "hint.used"}]}]},
+     "state": {"clue.letter": true, "case": "open", "clues": 1, "hint.used": true},
+     "expected": true},
+    {"name": "nested, blocked by not",
+     "condition": {"all": [{"fact": "clue.letter"}, {"not": {"fact": "case", "eq": "solved"}}]},
+     "state": {"clue.letter": true, "case": "solved"},
+     "expected": false}
+  ]
+}

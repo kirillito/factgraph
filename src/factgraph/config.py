@@ -46,7 +46,10 @@ def load_project(config_path: str | Path) -> Project:
             continue
         project.goals.append(Goal(goal_id, cond, dict(decl.get("tags", {})), Source(cfg_name)))
 
-    project.write_only_allow = list(cfg.get("check", {}).get("write_only_allow", []))
+    check_cfg = cfg.get("check", {})
+    project.write_only_allow = list(check_cfg.get("write_only_allow", []))
+    if "self_gated_kinds" in check_cfg:
+        project.self_gated_kinds = list(check_cfg["self_gated_kinds"])
 
     for adapter_name, entries in cfg.get("sources", {}).items():
         adapter = ADAPTERS.get(adapter_name)

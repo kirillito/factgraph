@@ -4,7 +4,9 @@ from __future__ import annotations
 
 from fnmatch import fnmatchcase
 
-from .model import Finding, Project
+from .evaluate import possible
+from .model import Finding, Project, fact_tests
+from .reach import Reach, compute_reach
 from .symbols import Symbols, build_symbols
 
 
@@ -14,7 +16,54 @@ def check(project: Project) -> list[Finding]:
     findings += undefined_facts(project, symbols)
     findings += write_only_facts(project, symbols)
     findings += type_misuse(project, symbols)
+    reach = compute_reach(project, symbols)
+    findings += unreachable_beats(project, symbols, reach)
     return _dedupe(findings)
+
+
+def unreachable_beats(project: Project, symbols: Symbols, reach: Reach) -> list[Finding]:
+    """A4: beats no play-through can fire (certain: the fixed point over-approximates).
+
+    A5: an unreachable deduction or puzzle that would become reachable if its own effects were
+    already in place is reported as self-gated instead.
+    """
+    findings = []
+    for beat in project.beats:
+        if reach.may_fire(beat):
+            continue
+        gated = self_gate(project, symbols, reach, beat) if beat.kind in project.self_gated_kinds else None
+        if gated:
+            needs, own = gated
+            findings.append(Finding(
+                "A5",
+                f"self-gated {beat.kind} '{beat.id}': it needs {_names(needs)},"
+                f" which is only reachable after its own effect on {_names(own)}",
+                beat.source,
+            ))
+        else:
+            findings.append(Finding("A4", f"unreachable beat '{beat.id}'", beat.source))
+    return findings
+
+
+def self_gate(project: Project, symbols: Symbols, reach: Reach, beat):
+    """(facts the beat needs, its own effect facts) if seeding its effects makes it reachable."""
+    if not beat.effects:
+        return None
+    seeded = compute_reach(project, symbols, extra_initial=beat.effects, exclude={beat.id})
+    if True not in possible(beat.requires, seeded.value_sets(), project.resolve):
+        return None
+    base = reach.value_sets()
+    needs = []
+    for test in fact_tests(beat.requires):
+        fact = project.resolve(test.fact)
+        if seeded.values.get(fact, {}).keys() != base.get(fact, set()) and fact not in needs:
+            needs.append(fact)
+    own = list(dict.fromkeys(project.resolve(e.fact) for e in beat.effects))
+    return needs, own
+
+
+def _names(facts) -> str:
+    return " and ".join(f"'{f}'" for f in facts)
 
 
 def _dedupe(findings: list[Finding]) -> list[Finding]:

@@ -32,6 +32,13 @@
       "location": "harbour",
       "requires": "item.rope",
       "effects": [{"set": "stats.cliff_climbed"}]
+    },
+    {
+      "id": "island_footprints",
+      "chapter": "1",
+      "location": "island",
+      "requires": "case.island.searched",
+      "effects": [{"set": "clue.island.footprints"}]
     }
   ]
 }

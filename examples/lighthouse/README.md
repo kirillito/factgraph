@@ -17,6 +17,8 @@ These are deliberate, so each check has something to find:
 |---|---|---|
 | A1 | `data/interactables.json` | `empty_mooring` reads `clue.lighthouse.leter`, a typo of `clue.lighthouse.letter` |
 | A1 | `game/dialogue/harbour_master.dialogue` | the "Ask about the boat" choice reads `clue.boat.missng`, a typo of `clue.boat.missing` |
+| A4 | `game/dialogue/harbour_master.dialogue` | the branch on `clue.keeper.found` can never open: the fact is declared but nothing sets it |
+| A5 | `data/deductions.json` | `keeper_rowed_to_island` needs footprints that are only found once the island is searched, which needs the deduction itself |
 
 ## Dialogue
 

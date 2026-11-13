@@ -5,6 +5,9 @@
     "clue.boat.missing":       {"type": "bool"},
     "clue.lamp.cold":          {"type": "bool"},
     "clue.harbour.testimony":  {"type": "bool"},
+    "clue.keeper.found":       {"type": "bool"},
+    "clue.island.footprints":  {"type": "bool"},
+    "case.island.searched":    {"type": "bool"},
     "case.keeper.state":       {"type": "string", "values": ["open", "solved"], "initial": "open"},
     "clues.found":             {"type": "int"}
   },

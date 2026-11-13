@@ -6,5 +6,12 @@
     "clues": ["clue.boat.missing", "clue.lamp.cold", "clue.harbour.testimony"],
     "requires": {"fact": "case.keeper.state", "eq": "open"},
     "on_solve": [{"set": "case.keeper.state", "value": "solved"}]
+  },
+  {
+    "id": "keeper_rowed_to_island",
+    "chapter": "1",
+    "case": "keeper",
+    "clues": ["clue.island.footprints"],
+    "on_solve": [{"set": "case.island.searched"}]
   }
 ]
