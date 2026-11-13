@@ -9,6 +9,8 @@ Run it from the repository root:
 factgraph check --config examples/lighthouse/factgraph.toml
 ```
 
+The chapter's flow graph is in [chapter1.md](chapter1.md).
+
 ## Seeded bugs
 
 These are deliberate, so each check has something to find:
