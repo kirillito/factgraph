@@ -7,10 +7,12 @@ from fnmatch import fnmatchcase
 from .evaluate import possible
 from .model import Finding, Project, fact_tests
 from .reach import Reach, compute_reach
+from .softlock import DEFAULT_MAX_STATES, softlocks
 from .symbols import Symbols, build_symbols
 
 
-def check(project: Project) -> list[Finding]:
+def check(project: Project, deep: bool = False, max_states: int = DEFAULT_MAX_STATES) -> list[Finding]:
+    """All checks; ``deep`` adds the softlock search (A6), bounded by ``max_states`` per goal."""
     symbols = build_symbols(project)
     findings = list(project.load_findings)
     findings += undefined_facts(project, symbols)
@@ -18,6 +20,8 @@ def check(project: Project) -> list[Finding]:
     findings += type_misuse(project, symbols)
     reach = compute_reach(project, symbols)
     findings += unreachable_beats(project, symbols, reach)
+    if deep:
+        findings += softlocks(project, symbols, max_states)
     return _dedupe(findings)
 
 

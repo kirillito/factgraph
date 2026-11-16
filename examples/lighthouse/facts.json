@@ -9,7 +9,8 @@
     "clue.island.footprints":  {"type": "bool"},
     "case.island.searched":    {"type": "bool"},
     "case.keeper.state":       {"type": "string", "values": ["open", "solved"], "initial": "open"},
-    "clues.found":             {"type": "int"}
+    "clues.found":             {"type": "int"},
+    "lamp.lit":                {"type": "bool"}
   },
   "aliases": {
     "clue.keeper.letter": "clue.lighthouse.letter"

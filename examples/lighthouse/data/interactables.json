@@ -10,6 +10,7 @@
       "id": "lamp_room",
       "chapter": "1",
       "location": "lighthouse",
+      "requires": {"not": "lamp.lit"},
       "effects": [{"set": "clue.lamp.cold"}, {"inc": "clues.found"}]
     },
     {
@@ -39,6 +40,12 @@
       "location": "island",
       "requires": "case.island.searched",
       "effects": [{"set": "clue.island.footprints"}]
+    },
+    {
+      "id": "relight_lamp",
+      "chapter": "1",
+      "location": "lighthouse",
+      "effects": [{"set": "lamp.lit"}]
     }
   ]
 }

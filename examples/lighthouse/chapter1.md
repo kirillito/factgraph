@@ -19,62 +19,66 @@ flowchart LR
     n8["enter.lighthouse<br/><i>location</i>"]:::beat
     n9["keeper_desk<br/><i>interactable</i>"]:::beat
     n10["lamp_room<br/><i>interactable</i>"]:::beat
+    n11["relight_lamp<br/><i>interactable</i>"]:::beat
   end
   subgraph g4["boathouse"]
-    n11["enter.boathouse<br/><i>location</i>"]:::beat
-    n12["empty_mooring<br/><i>interactable</i>"]:::beat
+    n12["enter.boathouse<br/><i>location</i>"]:::beat
+    n13["empty_mooring<br/><i>interactable</i>"]:::beat
   end
   subgraph g5["island"]
-    n13["island_footprints<br/><i>interactable</i>"]:::unreachable
+    n14["island_footprints<br/><i>interactable</i>"]:::unreachable
   end
-  n14["deduction.keeper_left_by_boat<br/><i>deduction</i>"]:::beat
-  n15["deduction.keeper_rowed_to_island<br/><i>deduction</i>"]:::unreachable
-  n16(["case.island.searched"]):::fact
-  n17(["case.keeper.state"]):::fact
-  n18(["chapter.1.started"]):::fact
-  n19(["clue.boat.missing"]):::fact
-  n20(["clue.boat.missng"]):::fact
-  n21(["clue.harbour.testimony"]):::fact
-  n22(["clue.island.footprints"]):::fact
-  n23(["clue.keeper.found"]):::fact
-  n24(["clue.lamp.cold"]):::fact
-  n25(["clue.lighthouse.leter"]):::fact
-  n26(["clue.lighthouse.letter"]):::fact
-  n27(["clues.found"]):::fact
-  n28(["item.rope"]):::fact
-  n29(["stats.cliff_climbed"]):::fact
-  n30(["stats.desk_opened"]):::fact
-  n31{{"chapter.1.complete"}}:::goal
-  n4 --> n21
-  n9 --> n26
-  n9 -- "+1" --> n27
-  n9 --> n30
-  n10 --> n24
-  n10 -- "+1" --> n27
-  n12 --> n19
-  n12 -- "+1" --> n27
-  n6 --> n28
-  n7 --> n29
-  n13 --> n22
-  n14 -- "= 'solved'" --> n17
-  n15 --> n16
-  n26 --> n1
-  n23 --> n2
-  n20 --> n3
-  n20 --> n4
-  n18 --> n5
-  n18 --> n8
-  n26 --> n11
-  n25 --> n12
-  n27 -- "> 1" --> n6
-  n28 --> n7
-  n16 --> n13
-  n19 --> n14
-  n24 --> n14
-  n21 --> n14
-  n17 -- "= 'open'" --> n14
+  n15["deduction.keeper_left_by_boat<br/><i>deduction</i>"]:::beat
+  n16["deduction.keeper_rowed_to_island<br/><i>deduction</i>"]:::unreachable
+  n17(["case.island.searched"]):::fact
+  n18(["case.keeper.state"]):::fact
+  n19(["chapter.1.started"]):::fact
+  n20(["clue.boat.missing"]):::fact
+  n21(["clue.boat.missng"]):::fact
+  n22(["clue.harbour.testimony"]):::fact
+  n23(["clue.island.footprints"]):::fact
+  n24(["clue.keeper.found"]):::fact
+  n25(["clue.lamp.cold"]):::fact
+  n26(["clue.lighthouse.leter"]):::fact
+  n27(["clue.lighthouse.letter"]):::fact
+  n28(["clues.found"]):::fact
+  n29(["item.rope"]):::fact
+  n30(["lamp.lit"]):::fact
+  n31(["stats.cliff_climbed"]):::fact
+  n32(["stats.desk_opened"]):::fact
+  n33{{"chapter.1.complete"}}:::goal
+  n4 --> n22
+  n9 --> n27
+  n9 -- "+1" --> n28
+  n9 --> n32
+  n10 --> n25
+  n10 -- "+1" --> n28
+  n13 --> n20
+  n13 -- "+1" --> n28
+  n6 --> n29
+  n7 --> n31
+  n14 --> n23
+  n11 --> n30
+  n15 -- "= 'solved'" --> n18
+  n16 --> n17
+  n27 --> n1
+  n24 --> n2
+  n21 --> n3
+  n21 --> n4
+  n19 --> n5
+  n19 --> n8
+  n27 --> n12
+  n30 -. "not" .-> n10
+  n26 --> n13
+  n28 -- "> 1" --> n6
+  n29 --> n7
+  n17 --> n14
+  n20 --> n15
+  n25 --> n15
   n22 --> n15
-  n17 -- "= 'solved'" --> n31
+  n18 -- "= 'open'" --> n15
+  n23 --> n16
+  n18 -- "= 'solved'" --> n33
   classDef beat fill:#eef,stroke:#446
   classDef fact fill:#efe,stroke:#464
   classDef goal fill:#ffe,stroke:#864

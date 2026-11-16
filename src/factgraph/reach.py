@@ -45,7 +45,7 @@ def compute_reach(
 ) -> Reach:
     """Run the fixed point. ``extra_initial`` seeds additional values; ``exclude`` lists beats that never fire."""
     symbols = symbols or build_symbols(project)
-    bounds = _int_bounds(project)
+    bounds = int_bounds(project)
     reach = Reach(project)
 
     for fact in set(symbols.reads) | set(symbols.writes) | set(project.facts):
@@ -59,7 +59,7 @@ def compute_reach(
         reach.values[fact] = {initial: Origin(0, None)}
     for effect in extra_initial:
         fact = project.resolve(effect.fact)
-        for value in _apply(effect, set(reach.values.get(fact, {None: None})), bounds.get(fact)):
+        for value in apply_effect(effect, set(reach.values.get(fact, {None: None})), bounds.get(fact)):
             reach.values.setdefault(fact, {}).setdefault(value, Origin(0, None))
 
     beats = [b for b in project.beats if b.id not in exclude]
@@ -85,7 +85,7 @@ def compute_reach(
                         v for v in current
                         if True in possible(beat.requires, {**snapshot, fact: {v}}, project.resolve)
                     }
-                for value in _apply(effect, current, bounds.get(fact)):
+                for value in apply_effect(effect, current, bounds.get(fact)):
                     new_values.append((fact, value, beat))
         for fact, value, beat in new_values:
             known = reach.values.setdefault(fact, {})
@@ -95,7 +95,7 @@ def compute_reach(
     return reach
 
 
-def _apply(effect: Effect, current: set, bounds) -> set:
+def apply_effect(effect: Effect, current: set, bounds) -> set:
     if TOP in current:
         return {TOP}
     if effect.op == "set":
@@ -120,7 +120,7 @@ def _inc(value: int, by: int, bounds) -> set:
     return {min(hi, max(lo, value + by))}
 
 
-def _int_bounds(project: Project) -> dict[str, tuple[int, int]]:
+def int_bounds(project: Project) -> dict[str, tuple[int, int]]:
     """Per int fact: the window [min constant - 1, max constant + 1] that comparisons can tell apart."""
     consts: dict[str, set[int]] = {}
 

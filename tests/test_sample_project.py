@@ -10,7 +10,7 @@ def test_sample_typo_is_reported_with_suggestion(run):
 
     assert code == 1
     assert (
-        "data/interactables.json:19: A1 undefined fact 'clue.lighthouse.leter'"
+        "data/interactables.json:20: A1 undefined fact 'clue.lighthouse.leter'"
         " (did you mean 'clue.lighthouse.letter'?)"
     ) in lines
 
@@ -31,4 +31,13 @@ def test_sample_unreachable_branch_and_self_gated_deduction_are_found(run):
     assert (
         "data/deductions.json:10: A5 self-gated deduction 'deduction.keeper_rowed_to_island':"
         " it needs 'clue.island.footprints', which is only reachable after its own effect on 'case.island.searched'"
+    ) in lines
+
+
+def test_sample_softlock_is_found_with_its_path(run):
+    code, lines = run("check", "--deep", "--config", SAMPLE)
+
+    assert (
+        "data/interactables.json:44: A6 softlock: after relight_lamp,"
+        " goal 'chapter.1.complete' can no longer be reached"
     ) in lines
