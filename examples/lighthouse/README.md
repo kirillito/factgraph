@@ -8,6 +8,7 @@ Run it from the repository root:
 ```
 factgraph check --config examples/lighthouse/factgraph.toml
 factgraph check --deep --config examples/lighthouse/factgraph.toml   # adds the softlock search
+factgraph check --coverage examples/lighthouse/traces --config examples/lighthouse/factgraph.toml
 ```
 
 The chapter's flow graph is in [chapter1.md](chapter1.md).
@@ -23,6 +24,7 @@ These are deliberate, so each check has something to find:
 | A4 | `game/dialogue/harbour_master.dialogue` | the branch on `clue.keeper.found` can never open: the fact is declared but nothing sets it |
 | A5 | `data/deductions.json` | `keeper_rowed_to_island` needs footprints that are only found once the island is searched, which needs the deduction itself |
 | A6 | `data/interactables.json` | relighting the lamp before examining it hides the cold-lamp clue for good, so the case can't be solved (`--deep`) |
+| A7 | `traces/opening_smoke_test.trace` | the smoke test still logs `keeper_dairy`, a beat that doesn't exist; coverage also lists the beats no test fires (`--coverage`) |
 
 ## Dialogue
 

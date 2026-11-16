@@ -8,6 +8,7 @@ import sys
 from . import explain, graph
 from .checks import check
 from .config import ConfigError, load_project
+from .coverage import TraceError
 from .softlock import DEFAULT_MAX_STATES
 
 
@@ -20,6 +21,8 @@ def main(argv: list[str] | None = None) -> int:
     p_check.add_argument("--deep", action="store_true", help="also search for softlocks (A6); slower")
     p_check.add_argument("--max-states", type=int, default=DEFAULT_MAX_STATES,
                          help=f"states to explore per goal with --deep (default {DEFAULT_MAX_STATES})")
+    p_check.add_argument("--coverage", metavar="TRACE_DIR",
+                         help="list reachable beats the game's tests never fire (A7), from trace files")
 
     p_why = sub.add_parser("why", help="the shortest path of beats that makes a beat reachable, or why it can't be")
     p_why.add_argument("beat")
@@ -45,7 +48,7 @@ def main(argv: list[str] | None = None) -> int:
         return 2
 
     if args.command == "check":
-        return _check(project, args.deep, args.max_states)
+        return _check(project, args.deep, args.max_states, args.coverage)
     if args.command == "why":
         return _print(*explain.why(project, args.beat))
     if args.command == "graph":
@@ -65,8 +68,12 @@ def _print(code: int, lines: list[str]) -> int:
     return code
 
 
-def _check(project, deep: bool, max_states: int) -> int:
-    findings = check(project, deep, max_states)
+def _check(project, deep: bool, max_states: int, traces: str | None) -> int:
+    try:
+        findings = check(project, deep, max_states, traces)
+    except TraceError as exc:
+        print(f"factgraph: {exc}", file=sys.stderr)
+        return 2
     findings.sort(key=lambda f: (f.source.file if f.source else "", f.source.line if f.source else 0, f.check))
     for finding in findings:
         print(finding)

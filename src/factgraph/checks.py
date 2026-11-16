@@ -11,8 +11,14 @@ from .softlock import DEFAULT_MAX_STATES, softlocks
 from .symbols import Symbols, build_symbols
 
 
-def check(project: Project, deep: bool = False, max_states: int = DEFAULT_MAX_STATES) -> list[Finding]:
-    """All checks; ``deep`` adds the softlock search (A6), bounded by ``max_states`` per goal."""
+def check(
+    project: Project,
+    deep: bool = False,
+    max_states: int = DEFAULT_MAX_STATES,
+    traces: str | None = None,
+) -> list[Finding]:
+    """All checks. ``deep`` adds the softlock search (A6), bounded by ``max_states`` per goal;
+    ``traces`` (a folder of beat IDs fired by the game's tests) adds coverage (A7)."""
     symbols = build_symbols(project)
     findings = list(project.load_findings)
     findings += undefined_facts(project, symbols)
@@ -22,6 +28,10 @@ def check(project: Project, deep: bool = False, max_states: int = DEFAULT_MAX_ST
     findings += unreachable_beats(project, symbols, reach)
     if deep:
         findings += softlocks(project, symbols, max_states)
+    if traces is not None:
+        from .coverage import coverage  # imports suggest() from here
+
+        findings += coverage(project, reach, traces)
     return _dedupe(findings)
 
 

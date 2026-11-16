@@ -1,0 +1,7 @@
+# Beats fired by the game's "opening" smoke test, one ID per line.
+enter.harbour
+enter.lighthouse
+keeper_desk
+lamp_room
+harbour_master
+keeper_dairy

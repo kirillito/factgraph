@@ -41,3 +41,13 @@ def test_sample_softlock_is_found_with_its_path(run):
         "data/interactables.json:44: A6 softlock: after relight_lamp,"
         " goal 'chapter.1.complete' can no longer be reached"
     ) in lines
+
+
+def test_sample_coverage_lists_beats_no_test_fires(run):
+    traces = str(Path(SAMPLE).parent / "traces")
+
+    code, lines = run("check", "--coverage", traces, "--config", SAMPLE)
+
+    assert "A7 coverage: 5 of 16 reachable beats fired by tests [info]" in lines
+    assert "data/interactables.json:44: A7 beat 'relight_lamp' is never fired by a test [info]" in lines
+    assert "traces/opening_smoke_test.trace:7: A7 trace names unknown beat 'keeper_dairy' [warning]" in lines
