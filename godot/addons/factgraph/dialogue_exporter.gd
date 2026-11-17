@@ -96,6 +96,32 @@ func _inline_expressions(text: String, parser: DMExpressionParser) -> Array:
 	return found
 
 
+## Export every .dialogue file under the roots and write the JSON to out_path (absolute, res:// or
+## relative to the working directory). Returns the absolute path written, or "" on failure.
+func save(out_path: String, roots: PackedStringArray) -> String:
+	var content := JSON.stringify(export_all(roots), "  ")
+	var target := ProjectSettings.globalize_path(out_path) if out_path.begins_with("res://") else out_path
+	DirAccess.make_dir_recursive_absolute(target.get_base_dir())
+	var file := FileAccess.open(target, FileAccess.WRITE)
+	if file == null:
+		printerr("factgraph: cannot write %s" % target)
+		return ""
+	file.store_string(content)
+	file.close()
+	return target
+
+
+## "" when a supported Dialogue Manager is installed; otherwise what is wrong. An untested major
+## version only warns.
+func check_dialogue_manager() -> String:
+	var version := dialogue_manager_version()
+	if version == "":
+		return "Dialogue Manager not found at %s" % DM_PLUGIN_CFG
+	if not version.begins_with("%d." % SUPPORTED_MAJOR):
+		push_warning("factgraph: Dialogue Manager %s is untested (supported: %d.x)" % [version, SUPPORTED_MAJOR])
+	return ""
+
+
 func dialogue_manager_version() -> String:
 	var cfg := ConfigFile.new()
 	if cfg.load(DM_PLUGIN_CFG) != OK:

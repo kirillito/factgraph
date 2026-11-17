@@ -1,18 +1,41 @@
 [build-system]
-requires = ["setuptools>=64"]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "factgraph"
-version = "0.1.0"
-description = "Story-flow linter for state-driven narrative games"
+dynamic = ["version"]
+description = "Story-flow linter for state-driven narrative games: missing flags, unreachable content, softlocks"
 readme = "README.md"
-license = { text = "MIT" }
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Kirill Bredikhin" }]
 requires-python = ">=3.11"
 dependencies = []
+keywords = ["gamedev", "narrative", "linter", "dialogue", "godot", "dialogue-manager", "static-analysis"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Games/Entertainment",
+    "Topic :: Software Development :: Quality Assurance",
+]
+
+[project.urls]
+Homepage = "https://github.com/kirillito/factgraph"
+Issues = "https://github.com/kirillito/factgraph/issues"
 
 [project.scripts]
 factgraph = "factgraph.cli:main"
+
+[tool.setuptools.dynamic]
+version = { attr = "factgraph.__version__" }
 
 [tool.setuptools.packages.find]
 where = ["src"]

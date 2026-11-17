@@ -11,6 +11,8 @@
 ##                    default: res://factgraph_dialogue.json
 ##   --root <dir>     folder to scan for .dialogue files; repeatable; default: res://
 ##
+## The editor plugin (plugin.gd) offers the same export from Project > Tools.
+##
 ## Tested with Dialogue Manager 4.x. The output keeps Dialogue Manager's compiled line data as-is
 ## and adds the raw source text and inline expressions of each line, plus each response's
 ## next_id_after (where its response group rejoins the flow).
@@ -44,24 +46,12 @@ func run(args: PackedStringArray) -> int:
 		roots.append("res://")
 
 	var exporter = Exporter.new()
-	var dm_version: String = exporter.dialogue_manager_version()
-	if dm_version == "":
-		printerr("factgraph: Dialogue Manager not found at %s" % Exporter.DM_PLUGIN_CFG)
+	var problem: String = exporter.check_dialogue_manager()
+	if problem != "":
+		printerr("factgraph: %s" % problem)
 		return 1
-	if not dm_version.begins_with("%d." % Exporter.SUPPORTED_MAJOR):
-		push_warning("factgraph: Dialogue Manager %s is untested (supported: %d.x)" % [dm_version, Exporter.SUPPORTED_MAJOR])
-
-	return _write(out_path, JSON.stringify(exporter.export_all(roots), "  "))
-
-
-func _write(out_path: String, content: String) -> int:
-	var target := ProjectSettings.globalize_path(out_path) if out_path.begins_with("res://") else out_path
-	DirAccess.make_dir_recursive_absolute(target.get_base_dir())
-	var file := FileAccess.open(target, FileAccess.WRITE)
-	if file == null:
-		printerr("factgraph: cannot write %s" % target)
+	var target: String = exporter.save(out_path, roots)
+	if target == "":
 		return 1
-	file.store_string(content)
-	file.close()
 	print("factgraph: exported dialogue to %s" % target)
 	return 0

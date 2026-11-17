@@ -1,11 +1,12 @@
-"""Command line: ``factgraph check | graph | why | who``."""
+"""Command line: ``factgraph check | graph | why | who | fixtures``."""
 
 from __future__ import annotations
 
 import argparse
 import sys
+from importlib import resources
 
-from . import explain, graph
+from . import __version__, explain, graph
 from .checks import check
 from .config import ConfigError, load_project
 from .coverage import TraceError
@@ -14,6 +15,7 @@ from .softlock import DEFAULT_MAX_STATES
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="factgraph", description="Story-flow linter for narrative games.")
+    parser.add_argument("--version", action="version", version=f"factgraph {__version__}")
     sub = parser.add_subparsers(dest="command", required=True)
 
     p_check = sub.add_parser("check", help="report flag and reachability errors (exit 1 on errors)")
@@ -40,7 +42,12 @@ def main(argv: list[str] | None = None) -> int:
     p_graph.add_argument("--format", choices=["mermaid", "dot"], default="mermaid")
     p_graph.add_argument("--config", default="factgraph.toml")
 
+    sub.add_parser("fixtures", help="print the condition-semantics fixtures, for testing a game's own evaluator")
+
     args = parser.parse_args(argv)
+    if args.command == "fixtures":
+        print(resources.files("factgraph").joinpath("fixtures/conditions.json").read_text(encoding="utf-8"), end="")
+        return 0
     try:
         project = load_project(args.config)
     except ConfigError as exc:
