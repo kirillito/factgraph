@@ -12,7 +12,7 @@ from collections import deque
 from dataclasses import dataclass, field
 
 from .checks import show_value
-from .model import Beat, Condition, FactTest, Not, Project
+from .model import Beat, Condition, FactTest, Not, Project, Unknown
 from .reach import compute_reach
 
 
@@ -125,6 +125,8 @@ def _tests(cond: Condition, positive: bool = True):
     """(FactTest, polarity) for each test in a condition; polarity flips under ``not``."""
     if isinstance(cond, FactTest):
         yield cond, positive
+    elif isinstance(cond, Unknown):
+        return
     elif isinstance(cond, Not):
         yield from _tests(cond.item, not positive)
     else:

@@ -11,7 +11,7 @@ have ({True}, {False} or both, i.e. "maybe").
 
 from __future__ import annotations
 
-from .model import All, Any_, Condition, FactTest, Not
+from .model import All, Any_, Condition, FactTest, Not, Unknown
 
 TOP = object()  # "any value": used for facts nothing declares or writes
 
@@ -36,6 +36,8 @@ def test_value(value, op: str | None, operand) -> bool:
 
 
 def evaluate(cond: Condition, state: dict) -> bool:
+    if isinstance(cond, Unknown):
+        raise ValueError(f"'{cond.key}' is opaque to factgraph: no concrete value")
     if isinstance(cond, FactTest):
         return test_value(state.get(cond.fact), cond.op, cond.value)
     if isinstance(cond, Not):
@@ -50,6 +52,8 @@ BOTH = frozenset((True, False))
 
 def possible(cond: Condition, values, resolve=lambda f: f) -> frozenset:
     """Outcomes ``cond`` may have when each fact ranges over ``values[fact]`` independently."""
+    if isinstance(cond, Unknown):
+        return BOTH
     if isinstance(cond, FactTest):
         vals = values.get(resolve(cond.fact), (None,))
         if TOP in vals:

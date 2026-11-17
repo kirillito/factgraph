@@ -58,7 +58,17 @@ class FactTest:
     source: Source | None = field(default=None, compare=False)
 
 
-Condition = Union[All, Any_, Not, FactTest]
+@dataclass(frozen=True)
+class Unknown:
+    """A test factgraph can't model (a derived value, a computed count): it may be true and it may be false.
+
+    ``key`` names what it tests, e.g. "skill" for ``{"skill": "strength", "gte": 3}``."""
+
+    key: str
+    source: Source | None = field(default=None, compare=False)
+
+
+Condition = Union[All, Any_, Not, FactTest, Unknown]
 
 TRUE: Condition = All(())
 
@@ -67,6 +77,8 @@ def fact_tests(cond: Condition):
     """Every FactTest inside a condition."""
     if isinstance(cond, FactTest):
         yield cond
+    elif isinstance(cond, Unknown):
+        return
     elif isinstance(cond, Not):
         yield from fact_tests(cond.item)
     else:

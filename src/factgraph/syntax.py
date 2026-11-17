@@ -5,21 +5,23 @@ Conditions:
   [c1, c2]                           shorthand for {"all": [c1, c2]}
   true                               always true
   {"all": [...]}, {"any": [...]}, {"not": c}
-  {"fact": "id"} plus one of "eq", "gt", "lt", "in"
+  {"fact": "id"} plus one of "eq", "ne", "gt", "gte", "lt", "lte", "in"
+                                     (ne, gte and lte become not-eq, gt n-1 and lt n+1)
+  {<opaque key>: ...}                a test factgraph can't model (``opaque``): may be true or false
 
 Effects:
   "fact.id"                          shorthand for {"set": "fact.id"}
   {"set": "id", "value": v}          value defaults to true
   {"inc": "id", "by": n}             by defaults to 1
-  {<custom>: arg}                    via an effect map, e.g. give_item -> set item.{arg}
+  {<custom>: arg}                    via an effect map, e.g. give_item -> set item.{arg}; "ignore" drops it
 """
 
 from __future__ import annotations
 
 from .jsonloc import line_of
-from .model import TRUE, All, Any_, Condition, Effect, FactTest, Not, Source
+from .model import TRUE, All, Any_, Condition, Effect, FactTest, Not, Source, Unknown
 
-OPS = ("eq", "gt", "lt", "in")
+OPS = ("eq", "ne", "gt", "gte", "lt", "lte", "in")
 
 
 class SyntaxProblem(ValueError):
@@ -32,14 +34,15 @@ def _src(file: str, node, fallback: int) -> Source:
     return Source(file, line_of(node, fallback))
 
 
-def parse_condition(node, file: str, line: int = 0) -> Condition:
+def parse_condition(node, file: str, line: int = 0, opaque=()) -> Condition:
+    """``opaque``: condition keys that test something factgraph can't model, e.g. a derived stat."""
     here = _src(file, node, line)
     if node is None or node is True:
         return TRUE
     if isinstance(node, str):
         return FactTest(str(node), source=here)
     if isinstance(node, list):
-        return All(tuple(parse_condition(item, file, here.line) for item in node))
+        return All(tuple(parse_condition(item, file, here.line, opaque) for item in node))
     if isinstance(node, dict):
         if len(node) != 1 and set(node) & {"all", "any", "not"}:
             raise SyntaxProblem(f"unrecognized condition {_show(node)}", here)
@@ -48,10 +51,10 @@ def parse_condition(node, file: str, line: int = 0) -> Condition:
             items = node[key]
             if not isinstance(items, list):
                 raise SyntaxProblem(f"'{key}' needs a list of conditions", here)
-            parsed = tuple(parse_condition(item, file, here.line) for item in items)
+            parsed = tuple(parse_condition(item, file, here.line, opaque) for item in items)
             return All(parsed) if key == "all" else Any_(parsed)
         if "not" in node:
-            return Not(parse_condition(node["not"], file, here.line))
+            return Not(parse_condition(node["not"], file, here.line, opaque))
         if "fact" in node:
             fact = node["fact"]
             if not isinstance(fact, str):
@@ -65,6 +68,13 @@ def parse_condition(node, file: str, line: int = 0) -> Condition:
                 return FactTest(str(fact), source=here)
             op = ops[0]
             value = node[op]
+            if op == "ne":
+                return Not(FactTest(str(fact), "eq", _plain(value), source=here))
+            if op in ("gte", "lte"):
+                if isinstance(value, bool) or not isinstance(value, int):
+                    raise SyntaxProblem(f"'{op}' needs an integer, got {_show(value)}", here)
+                return FactTest(str(fact), "gt" if op == "gte" else "lt", value - 1 if op == "gte" else value + 1,
+                                source=here)
             if op == "in":
                 if not isinstance(value, list):
                     raise SyntaxProblem("'in' needs a list of values", here)
@@ -72,10 +82,14 @@ def parse_condition(node, file: str, line: int = 0) -> Condition:
             else:
                 value = _plain(value)
             return FactTest(str(fact), op, value, source=here)
+        for key in opaque:
+            if key in node:
+                return Unknown(key, source=here)
     raise SyntaxProblem(f"unrecognized condition {_show(node)}", here)
 
 
 def parse_effects(node, file: str, line: int = 0, effect_map: dict | None = None) -> list[Effect]:
+    """``effect_map``: custom effect name -> template (see ``effect_from_template``) or "ignore"."""
     if node is None:
         return []
     items = node if isinstance(node, list) else [node]
@@ -96,6 +110,8 @@ def parse_effect(node, file: str, line: int, effect_map: dict) -> list[Effect]:
             return [Effect("inc", str(node["inc"]), _plain(node.get("by", 1)), here)]
         for name, template in effect_map.items():
             if name in node:
+                if template == "ignore":
+                    return []
                 return [effect_from_template(template, node[name], here)]
     raise SyntaxProblem(f"unrecognized effect {_show(node)}", here)
 

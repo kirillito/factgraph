@@ -19,8 +19,12 @@ their own expressions, which are mapped through a vocabulary (see
 | `{"fact": "case.state", "in": ["open", "reopened"]}` | equals one of the values |
 | `{"fact": "clues.found", "gt": 2}` | an int greater than |
 | `{"fact": "clues.found", "lt": 3}` | an int less than |
+| `{"fact": "case.state", "ne": "solved"}` | doesn't equal a value (the same as `not` around `eq`) |
+| `{"fact": "clues.found", "gte": 2}` | an int greater than or equal (the same as `gt` 1) |
+| `{"fact": "clues.found", "lte": 2}` | an int less than or equal (the same as `lt` 3) |
+| `{"skill": "strength", "gte": 3}` | a test factgraph can't model, when `skill` is listed as opaque (see below) |
 
-A fact test has exactly one of `eq`, `in`, `gt` or `lt`, or none for a truthy test. Unknown keys are
+A fact test has exactly one of `eq`, `ne`, `in`, `gt`, `gte`, `lt` or `lte`, or none for a truthy test. Unknown keys are
 reported, not ignored, so `{"fact": "x", "ge": 3}` is an error rather than a silent truthy test.
 In TOML, write the same structures as inline tables, e.g. `requires = { fact = "case.state", eq = "solved" }`.
 
@@ -29,7 +33,8 @@ In TOML, write the same structures as inline tables, e.g. `requires = { fact = "
 - An unset fact is falsy and equal to nothing.
 - A bare fact test is true when the value is truthy: `true`, a non-zero int or a non-empty string.
 - `eq` and `in` compare type and value: `true` does not equal `1`, and `1` does not equal `"1"`.
-- `gt` and `lt` are false for anything that is not an int.
+- `gt`, `gte`, `lt` and `lte` are false for anything that is not an int.
+- `ne` is `not eq`: true on an unset fact, and across types.
 - `all` of nothing is true; `any` of nothing is false.
 
 ## Effect syntax
@@ -41,6 +46,7 @@ In TOML, write the same structures as inline tables, e.g. `requires = { fact = "
 | `{"inc": "clues.found"}` | add 1 |
 | `{"inc": "coins", "by": -2}` | add any amount, negative to subtract |
 | `{"give_item": "rope"}` | a custom name mapped in `[effects]` (see [configuration.md](configuration.md#custom-effect-names)) |
+| `{"play_sound": "gull"}` | a custom name mapped to `"ignore"` in `[effects]`: touches no facts |
 
 Effects are a list, or a single effect.
 
@@ -49,6 +55,15 @@ Effects are a list, or a single effect.
 factgraph can only check what it can model. Conditions that compute ("clues found plus favours owed is at
 least five", "the flag named after the current chapter") don't fit the model. The Dialogue Manager adapter
 reports them as unmapped rather than guessing.
+
+Some tests read values that aren't facts at all, such as a character's derived stats or a count your game
+computes. List their keys as opaque, and factgraph treats each such test as possibly true and possibly
+false, so it hides no content from the other checks:
+
+```toml
+[conditions]
+opaque = ["skill", "count"]   # {"skill": "strength", "gte": 3} is unknown, not an error
+```
 
 If your game has a condition evaluator of its own, keep its vocabulary small: fact tests, comparisons with
 literals, `and`, `or` and `not`. When a rule needs computation, compute it into a fact in code

@@ -11,6 +11,9 @@ The exporter is tested with Dialogue Manager 4.x on Godot 4. It warns on other m
 1. Install Dialogue Manager 4.x in your project as usual (`addons/dialogue_manager`).
 2. Copy [godot/addons/factgraph](../godot/addons/factgraph) from this repository to `addons/factgraph` in
    your project.
+   The `tests` folder inside it is the exporter's self-test (below). Run it once, then leave it out if you
+   like: Dialogue Manager adds every `.dialogue` file in the project, the self-test's fixture too, to the
+   project's translation template list, and that list ships in exported builds.
 3. Optionally, enable **factgraph** under Project > Project Settings > Plugins. This adds
    **Project > Tools > Export dialogue for factgraph**, which writes to the project setting
    `factgraph/export_path` (default `res://factgraph_dialogue.json`). The headless export below works
@@ -61,11 +64,16 @@ write facts:
 ```toml
 [vocabulary.read]
 has = "fact"                 # has("clue.letter"): the first string argument names a fact
+is_ = "eq"                   # is_("case.state", "solved"): the fact equals the second argument
+skill = "opaque"             # skill("strength") >= 3: not a fact; possibly true, possibly false
 
 [vocabulary.write]
 set_fact = "set"             # set_fact("clue.letter") sets true; set_fact("case.state", "solved") sets a value
 add = "inc"                  # add("clues.found") adds 1; add("coins", -2) adds an amount
 give_item = { set = "item.{}" }   # give_item("rope") sets item.rope = true
+
+[vocabulary.write.open_menu]  # what a call writes depends on its first argument
+cases = { naming = { set = "hero.name", value = "Ada" }, map = [] }   # a list of templates; [] writes nothing
 
 [vocabulary]
 ignore = ["play_sound", "shake_camera"]   # calls that don't touch facts
@@ -78,7 +86,8 @@ A source table can extend the vocabulary with its own `vocabulary = { ... }`.
 
 In conditions (`if`, `elif`, `while`, response `[if ...]`, inline `[if ...]`):
 
-- calls in the read vocabulary, e.g. `has("clue.letter")`, which test whether the fact is truthy;
+- calls in the read vocabulary, e.g. `has("clue.letter")`, which test whether the fact is truthy; an `eq`
+  entry tests the fact against its second argument, and an `opaque` entry (alone or compared) is unknown;
 - comparisons between a fact and a literal: `==`, `!=`, `>`, `<`, `>=`, `<=`, and `in [ ... ]` with an
   array of literals. A fact is a read call or, with `variables = true`, a variable or dotted variable.
   `count("clues.found") > 2` and `case.state == "solved"` both map;
@@ -86,7 +95,8 @@ In conditions (`if`, `elif`, `while`, response `[if ...]`, inline `[if ...]`):
 
 In mutations (`do`, `set`, `$>`, inline `[do ...]`):
 
-- calls in the write vocabulary with literal arguments;
+- calls in the write vocabulary with literal arguments; a `cases` entry picks its effects by the first
+  argument and reports an argument it has no case for;
 - with `variables = true`, assignments `fact = literal`, `fact += n` and `fact -= n`;
 - calls in `ignore`, which are dropped.
 

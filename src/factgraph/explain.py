@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from .checks import show_value, suggest
 from .evaluate import TOP, test_value
-from .model import All, Beat, Condition, FactTest, Not, Project
+from .model import All, Beat, Condition, FactTest, Not, Project, Unknown
 from .reach import Reach, compute_reach
 from .symbols import build_symbols
 
@@ -63,6 +63,8 @@ def _path(project: Project, reach: Reach, target: Beat) -> list[str]:
 
 def _support(project: Project, reach: Reach, cond: Condition, positive: bool):
     """Fact values that make ``cond`` (or its negation) true, preferring the earliest; None if impossible."""
+    if isinstance(cond, Unknown):
+        return []
     if isinstance(cond, FactTest):
         fact = project.resolve(cond.fact)
         options = [

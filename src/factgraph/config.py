@@ -40,7 +40,7 @@ def load_project(config_path: str | Path) -> Project:
 
     for goal_id, decl in cfg.get("goals", {}).items():
         try:
-            cond = parse_condition(decl.get("requires"), cfg_name)
+            cond = parse_condition(decl.get("requires"), cfg_name, opaque=tuple(cfg.get("conditions", {}).get("opaque", [])))
         except SyntaxProblem as exc:
             project.load_findings.append(Finding("config", f"goal '{goal_id}': {exc}", Source(cfg_name)))
             continue

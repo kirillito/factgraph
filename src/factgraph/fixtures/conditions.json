@@ -5,6 +5,7 @@
     "A bare fact test is true when the value is truthy: true, a non-zero int or a non-empty string.",
     "eq and in compare type and value: true does not equal 1 and 1 does not equal \"1\".",
     "gt and lt are false for anything that is not an int.",
+    "ne is the negation of eq: true on an unset fact and across types. gte and lte are false for anything that is not an int.",
     "all of nothing is true; any of nothing is false."
   ],
   "cases": [
@@ -34,6 +35,16 @@
     {"name": "lt on unset",               "condition": {"fact": "clues", "lt": 5}, "state": {},              "expected": false},
     {"name": "gt on a string",            "condition": {"fact": "clues", "gt": 0}, "state": {"clues": "3"},  "expected": false},
     {"name": "gt on a bool",              "condition": {"fact": "clues", "gt": 0}, "state": {"clues": true}, "expected": false},
+    {"name": "ne, different",             "condition": {"fact": "case", "ne": "solved"}, "state": {"case": "open"},   "expected": true},
+    {"name": "ne, same",                  "condition": {"fact": "case", "ne": "solved"}, "state": {"case": "solved"}, "expected": false},
+    {"name": "ne on unset",               "condition": {"fact": "case", "ne": "solved"}, "state": {},                 "expected": true},
+    {"name": "ne: 1 is not \"1\"",        "condition": {"fact": "clues", "ne": "1"},     "state": {"clues": 1},       "expected": true},
+    {"name": "gte, equal",                "condition": {"fact": "clues", "gte": 2}, "state": {"clues": 2},   "expected": true},
+    {"name": "gte, below",                "condition": {"fact": "clues", "gte": 2}, "state": {"clues": 1},   "expected": false},
+    {"name": "lte, equal",                "condition": {"fact": "clues", "lte": 2}, "state": {"clues": 2},   "expected": true},
+    {"name": "lte, above",                "condition": {"fact": "clues", "lte": 2}, "state": {"clues": 3},   "expected": false},
+    {"name": "lte on unset",              "condition": {"fact": "clues", "lte": 5}, "state": {},             "expected": false},
+    {"name": "gte on a string",           "condition": {"fact": "clues", "gte": 0}, "state": {"clues": "3"}, "expected": false},
 
     {"name": "in, member",                "condition": {"fact": "case", "in": ["open", "stalled"]}, "state": {"case": "open"},   "expected": true},
     {"name": "in, not a member",          "condition": {"fact": "case", "in": ["open", "stalled"]}, "state": {"case": "solved"}, "expected": false},

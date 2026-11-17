@@ -6,9 +6,12 @@ mapping them to facts through a configurable vocabulary:
 
     [vocabulary.read]                  # functions whose first string argument names a fact
     has = "fact"
+    is_ = "eq"                         # is_("id", value): the fact equals the second argument
+    skill = "opaque"                   # skill("x") >= 3: a value factgraph can't model, maybe true or false
     [vocabulary.write]                 # functions that write facts
     set_fact = "set"                   # set_fact("id") / set_fact("id", value)
     add = "inc"                        # add("id") / add("id", amount)
+    open_menu = { cases = { naming = { set = "hero.name", value = "Ada" }, map = [] } }   # per first argument
     give_item = { set = "item.{}" }    # give_item("oar") -> set item.oar = true
     [vocabulary]
     ignore = ["play_sound"]            # calls with no effect on facts
@@ -26,10 +29,12 @@ any cue. Anything the vocabulary doesn't cover is reported, not guessed.
 
 from __future__ import annotations
 
+import difflib
+
 import json
 from pathlib import Path
 
-from ..model import TRUE, All, Any_, Beat, Condition, Effect, FactTest, Finding, Not, Source
+from ..model import TRUE, All, Any_, Beat, Condition, Effect, FactTest, Finding, Not, Source, Unknown
 from ..syntax import SyntaxProblem, effect_from_template
 
 FORMAT = "factgraph-dialogue-manager"
@@ -317,6 +322,8 @@ class _Translator:
         op = self.tokens[self.pos]["value"]
         self.pos += 1
         right = self.operand()
+        if "opaque" in (left[0], right[0]):
+            return Unknown(left[1] if left[0] == "opaque" else right[1], source=self.source)
         if left[0] == "lit" and right[0] == "fact":
             left, right = right, left
             op = {">": "<", "<": ">", ">=": "<=", "<=": ">="}.get(op, op)
@@ -350,6 +357,8 @@ class _Translator:
             return FactTest(value, source=self.source)
         if kind == "cond":
             return value
+        if kind == "opaque":
+            return Unknown(value, source=self.source)
         if kind == "lit" and value is True:
             return TRUE
         raise Unmapped("a literal is not a condition")
@@ -364,7 +373,18 @@ class _Translator:
             name = tok.get("function", "")
             if name not in self.reads:
                 raise Unmapped(f"function '{name}' is not in the read vocabulary")
-            return ("fact", self.fact_arg(name, tok))
+            spec = self.reads[name]
+            if spec == "opaque":
+                return ("opaque", name)
+            fact = self.fact_arg(name, tok)
+            if spec == "eq":
+                args = self.args(tok)
+                if len(args) != 2:
+                    raise Unmapped(f"'{name}' needs a fact ID and a value")
+                return ("cond", FactTest(fact, "eq", args[1], source=self.source))
+            if spec != "fact":
+                raise Unmapped(f"read vocabulary entry for '{name}' must be 'fact', 'eq' or 'opaque'")
+            return ("fact", fact)
         if kind == "variable":
             return ("fact", self.variable_chain(tok))
         if kind in ("string", "number", "bool"):
@@ -441,6 +461,8 @@ class _Translator:
         if isinstance(spec, dict):
             if not args:
                 raise Unmapped(f"'{name}' needs an argument")
+            if "cases" in spec:
+                return self.case_effects(name, spec["cases"], args[0])
             try:
                 return [effect_from_template(spec, args[0], self.source)]
             except SyntaxProblem as exc:
@@ -451,6 +473,20 @@ class _Translator:
         if spec == "inc":
             return [Effect("inc", fact, args[1] if len(args) > 1 else 1, self.source)]
         raise Unmapped(f"vocabulary entry for '{name}' must be 'set', 'inc' or a template")
+
+
+    def case_effects(self, name: str, cases: dict, arg) -> list[Effect]:
+        """A write whose effects depend on its first argument: ``cases = { naming = {set = ...}, map = [] }``."""
+        if str(arg) not in cases:
+            close = difflib.get_close_matches(str(arg), list(cases), n=1)
+            hint = f" (did you mean '{close[0]}'?)" if close else ""
+            raise Unmapped(f"'{name}' has no case for '{arg}'{hint}")
+        templates = cases[str(arg)]
+        templates = templates if isinstance(templates, list) else [templates]
+        try:
+            return [effect_from_template(t, arg, self.source) for t in templates]
+        except SyntaxProblem as exc:
+            raise Unmapped(str(exc)) from None
 
 
 def _clean(tokens) -> list:
